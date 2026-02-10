@@ -1,16 +1,10 @@
 function result = Function_LaserAnalysis(filename)
-    % 1. LOAD DATA 
-    % We suppress warnings about variable names to keep output clean
     opts = detectImportOptions(filename);
     opts.VariableNamingRule = 'preserve'; 
     datab = readtable(filename, opts); 
     datab = table2array(datab);
-
-    % Constants
     sound_dur = 1.025;
     reaction_period = 1.75;
-    
-    % Column mapping based on your script
     timestamps = datab(:,1);
     soundonset = datab(:,7);
     trial_num = datab(:,8);
@@ -20,7 +14,6 @@ function result = Function_LaserAnalysis(filename)
     %% Analysis on Hit Rate
     trial_ind = find(soundonset == 1);
     
-    % Identify Laser vs Non-Laser trials
     trial_ind_nonlaser = trial_ind(soundAB(trial_ind)==1 | soundAB(trial_ind)==2);
     trial_ind_laser = trial_ind(soundAB(trial_ind)==3 | soundAB(trial_ind)==4);
     
@@ -29,7 +22,7 @@ function result = Function_LaserAnalysis(filename)
     omiss_laser = 0;
     omiss_nonlaser = 0;
     
-    % --- Laser Loop ---
+    % Laser loop
     for i = 1:numel(trial_ind_laser)
         ind = trial_ind_laser(i)+1;
         if ind <= size(datab,1)
@@ -42,7 +35,7 @@ function result = Function_LaserAnalysis(filename)
         end
     end
     
-    % --- Non-Laser Loop ---
+    % NonLaser loop
     for i = 1:numel(trial_ind_nonlaser)
         ind = trial_ind_nonlaser(i)+1;
         if ind <= size(datab,1)
@@ -55,7 +48,7 @@ function result = Function_LaserAnalysis(filename)
         end
     end
 
-    % Calculate Percentages
+    % percent calculations
     denom_laser = numel(trial_ind_laser) - omiss_laser;
     if denom_laser > 0
         accuracyLaser = (reward_by_lick_num_laser / denom_laser) * 100; 
@@ -76,7 +69,7 @@ function result = Function_LaserAnalysis(filename)
     %% Calculating First Lick Latency
     first_lick = find(trigger_by_lick);
     
-    laser_reward_indices = [];    % Renamed to avoid confusion
+    laser_reward_indices = [];
     nonlaser_reward_indices = [];
     
     for i = 1:length(first_lick)
