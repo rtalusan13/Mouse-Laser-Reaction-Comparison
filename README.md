@@ -15,11 +15,11 @@ It provides a **turnkey workflow** for:
 
 ## Features
 
-✅ **Intelligent Batch Processing** – Recursively searches directories to process hundreds of data files automatically.
-✅ **Laser vs. Non-Laser Logic** – Automatically separates trials based on sound/trial type (Control: Types 1/2 vs. Laser: Types 3/4).
-✅ **Smart Data Merging** – Updates calculated metrics in the output Excel file while *preserving* manually entered columns (e.g., Angle, Power).
-✅ **Feature Extraction** – Computes Accuracy (%), Omission Rates, and First-Lick Latency (Reaction Time).
-✅ **Metadata Parsing** – Extracts Subject IDs and Dates directly from filenames for consistent record-keeping.
+✅ **Intelligent Batch Processing** – Recursively searches directories to process hundreds of data files automatically. <br>
+✅ **Laser vs. Non-Laser Logic** – Automatically separates trials based on sound/trial type (Control: Types 1/2 vs. Laser: Types 3/4). <br>
+✅ **Smart Data Merging** – Updates calculated metrics in the output Excel file while *preserving* manually entered columns (e.g., Angle, Power). <br>
+✅ **Feature Extraction** – Computes Accuracy (%), Omission Rates, and First-Lick Latency (Reaction Time). <br>
+✅ **Metadata Parsing** – Extracts Subject IDs and Dates directly from filenames for consistent record-keeping. <br>
 
 ## File Descriptions
 
