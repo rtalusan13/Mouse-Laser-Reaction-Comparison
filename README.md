@@ -38,12 +38,11 @@ It provides a **turnkey workflow** for:
 
 1.  Clone this repository:
     ```bash
-    git clone [https://github.com/yourusername/Optogenetic-Behavior-Analysis.git](https://github.com/yourusername/Optogenetic-Behavior-Analysis.git)
-    cd Optogenetic-Behavior-Analysis
+    git clone [https://github.com/rtalusan13/Mouse-Laser-Reaction-Comparison.git](https://github.com/rtalusan13/Mouse-Laser-Reaction-Comparison.git)
+    cd Mouse-Laser-Reaction-Comparison
     ```
-2.  **Organize Data**: Ensure your raw LabView data files are located in a folder named `labview_copy` (or modify the `targetFolderName` variable in `Batch_Processing.m`).
+2.  **Organize Data**: Modify the configuration of `targetFolderName` in Batch_Processing.m to copy the raw LabVIEW data file directory name (i.e., `labview_copy`).
 
 ### Usage
 
-1.  Open **`Batch_Processing.m`** in MATLAB.
-2.
+1.  Open & Run **`Batch_Processing.m`** in MATLAB.
