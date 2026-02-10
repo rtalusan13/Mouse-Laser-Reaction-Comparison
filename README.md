@@ -1,4 +1,4 @@
-# Mouse-Laser-Reaction-Comparison
+# Research @ UIUC's Gritton Lab
 
 **MATLAB pipeline for analyzing behavioral performance in optogenetic laser tasks.**
 
