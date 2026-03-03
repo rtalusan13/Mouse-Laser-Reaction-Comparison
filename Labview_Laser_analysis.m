@@ -6,11 +6,6 @@ close all
 %datab=readtable("D:\LABVIEW sound localization\11252025\11222025-115442-1029"); 
 datab=readtable("C:\Users\rapha\Research\sophie_thesis\Code\labview_copy\12312025-121753-1034"); 
 
-
-% C:\Users\rapha\Research\sophie_thesis\labview_copy
-% maybe need to store all data as a directory in the same folder as the
-% MATLAB script?
-
 datab = table2array(datab);
 % "F:\07312025-155046-948L"  "F:\07302025-145149-948L"
 
