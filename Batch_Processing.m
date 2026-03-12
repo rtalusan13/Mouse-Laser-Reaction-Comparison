@@ -137,6 +137,13 @@ if ~isempty(resultsList)
     writetable(T, outputExcel, 'Sheet', targetSheet);
     
     fprintf('Success! Saved %d records to tab "%s" in %s.\n', count, targetSheet, outputExcel);
+    
+    [~, baseName] = fileparts(outputExcel);
+    outputMat = [baseName, '_Snapshot.mat'];
+    
+    lastUpdated = datetime('now');
+    save(outputMat, 'T', 'lastUpdated');
+    fprintf('Binary snapshot created: %s\n', outputMat);
 else
     fprintf('No valid data found.\n');
 end
