@@ -2,14 +2,19 @@
 clc; clear; 
 
 % --- CONFIGURATION ---
+
+% Change folder name based on the raw data directory
 targetFolderName = 'labview_copy'; 
+
+% Change excel sheet name to either generate a new file or rewrite in a
+% previous one
 outputExcel = 'Batch_Analysis_Results.xlsx';
+
+% Change this to specify which Sheet of the .xlsx should be read/write
+targetSheet = 'Sheet1'; 
 % ---------------------
-
-
 currentDir = pwd;
 [~, currentFolderName] = fileparts(currentDir);
-
 if strcmpi(currentFolderName, targetFolderName)
     dataDir = currentDir;
 elseif isfolder(fullfile(currentDir, targetFolderName))
@@ -24,49 +29,47 @@ fullExcelPath = fullfile(pwd, outputExcel);
 existingData = table();
 
 if isfile(fullExcelPath)
-    fprintf('Loading existing Excel file to preserve manual edits...\n');
-    opts = detectImportOptions(fullExcelPath);
-    opts.VariableNamingRule = 'preserve';
-    
-    % Force ID to be string to avoid type mismatches
-    opts = setvartype(opts, 'ID', 'string');
-    opts = setvartype(opts, 'Date', 'string');
-    
-    try
-        existingData = readtable(fullExcelPath, opts);
-    catch
-        warning('Could not read existing Excel file. Starting fresh.');
+    [~, sheets] = xlsfinfo(fullExcelPath);
+    if ismember(targetSheet, sheets)
+        fprintf('Loading existing data from sheet: %s...\n', targetSheet);
+        opts = detectImportOptions(fullExcelPath, 'Sheet', targetSheet);
+        opts.VariableNamingRule = 'preserve';
+        opts = setvartype(opts, {'ID', 'Date'}, 'string'); 
+        
+        try
+            existingData = readtable(fullExcelPath, opts);
+        catch
+            warning('Could not read existing sheet. Starting fresh.');
+        end
+    else
+        fprintf('Sheet "%s" not found. It will be created.\n', targetSheet);
     end
 end
 
-
-
 allFiles = dir(fullfile(dataDir, '**', '*'));
 allFiles = allFiles(~[allFiles.isdir]);
-
 resultsList = [];
 count = 0;
 
 for i = 1:length(allFiles)
     thisFile = allFiles(i);
     fileName = thisFile.name;
+    if contains(fileName, '.'), continue; end
     
-    if contains(fileName, '.')
-        continue; 
-    end
-    
+    % Extraction of ID and Date
     parts = split(fileName, '-');
     if length(parts) >= 3
-        specimenID = parts{end}; 
+        specimenID = string(parts{end}); 
         rawDate = parts{1};      
         if length(rawDate) == 8
-             isoDate = [rawDate(5:8) '-' rawDate(1:2) '-' rawDate(3:4)];
+             isoDate = string([rawDate(5:8) '-' rawDate(1:2) '-' rawDate(3:4)]);
         else
-             isoDate = rawDate;
+             isoDate = string(rawDate);
         end
     else
         [~, specimenID] = fileparts(thisFile.folder);
-        isoDate = datestr(thisFile.datenum, 'yyyy-mm-dd');
+        specimenID = string(specimenID);
+        isoDate = string(datestr(thisFile.datenum, 'yyyy-mm-dd'));
     end
     
     fprintf('Processing %s (ID: %s)... ', fileName, specimenID);
@@ -74,21 +77,20 @@ for i = 1:length(allFiles)
     try
         calcData = Function_LaserAnalysis(fullfile(thisFile.folder, fileName));
         
-        % Check if this row already exists in Excel
-        % We match based on ID and Date (and Filename if you added it)
         matchIdx = [];
         if ~isempty(existingData)
              matchIdx = find(strcmp(existingData.ID, specimenID) & ...
                              strcmp(existingData.Date, isoDate));
         end
+
         if ~isempty(matchIdx)
             rowEntry = table2struct(existingData(matchIdx(1), :));
             isNew = false;
         else
             rowEntry = struct();
-            rowEntry.ID = string(specimenID);
-            rowEntry.Date = string(isoDate);
-            rowEntry.Angle = NaN;
+            rowEntry.ID = specimenID;
+            rowEntry.Date = isoDate;
+            rowEntry.Angle = NaN; 
             rowEntry.Power = NaN;
             isNew = true;
         end
@@ -106,31 +108,19 @@ for i = 1:length(allFiles)
         rowEntry.LatencyLaser = calcData.LatencyLaser;
         rowEntry.LatencyNonLaser = calcData.LatencyNonLaser;
         
-        
         if isempty(resultsList)
             resultsList = rowEntry;
         else
-            fields = fieldnames(rowEntry);
-            existingFields = fieldnames(resultsList);
-            for k = 1:length(fields)
-                if ~isfield(resultsList, fields{k})
-                    [resultsList.(fields{k})] = deal(NaN);
+            f_names = fieldnames(rowEntry);
+            for k = 1:length(f_names)
+                if ~isfield(resultsList, f_names{k})
+                    [resultsList.(f_names{k})] = deal(NaN);
                 end
             end
-            for k = 1:length(existingFields)
-                if ~isfield(rowEntry, existingFields{k})
-                    rowEntry.(existingFields{k}) = NaN;
-                end
-            end
-            
             resultsList(end+1) = rowEntry;
         end
         
-        if isNew
-            fprintf('Done (New Entry).\n');
-        else
-            fprintf('Done (Updated).\n');
-        end
+        if isNew, fprintf('Done (New).\n'); else, fprintf('Done (Updated).\n'); end
         count = count + 1;
         
     catch ME
@@ -140,17 +130,13 @@ end
 
 if ~isempty(resultsList)
     T = struct2table(resultsList);
-    desiredOrder = {'ID', 'Angle', 'Power', 'Date', ...
-                    'AccuracyLaser', 'AccuracyNonLaser', 'OmissionsLaser', ...
-                    'OmissionsNonLaser', 'LaserReward', 'NonLaserReward', ...
-                    'LaserTrials', 'NonLaserTrials', 'oLaserPercent', ...
-                    'oNonLaserPercent', 'LatencyLaser', 'LatencyNonLaser'};
+    desiredOrder = {'ID', 'Angle', 'Power', 'Date', 'AccuracyLaser', 'AccuracyNonLaser', 'OmissionsLaser', 'OmissionsNonLaser', 'LaserReward', 'NonLaserReward', 'LaserTrials', 'NonLaserTrials', 'oLaserPercent', 'oNonLaserPercent', 'LatencyLaser', 'LatencyNonLaser'};
     validVars = intersect(desiredOrder, T.Properties.VariableNames, 'stable');
     T = movevars(T, validVars, 'Before', 1);
     T = sortrows(T, {'ID', 'Date'});
+    writetable(T, outputExcel, 'Sheet', targetSheet);
     
-    writetable(T, outputExcel);
-    fprintf('Success! Saved %d records to %s. Manual entries preserved.\n', count, outputExcel);
+    fprintf('Success! Saved %d records to tab "%s" in %s.\n', count, targetSheet, outputExcel);
 else
     fprintf('No valid data found.\n');
 end
